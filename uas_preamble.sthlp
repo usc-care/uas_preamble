@@ -57,4 +57,4 @@ of the do or ado file (e.g., foo.do, foo.ado).
 {title:Author}
 
 {p 4 4 2}Marshall W. Garland{break}
-         Gibson Consulting Group{break}
+         University of Southern California{break}

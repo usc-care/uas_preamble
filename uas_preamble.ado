@@ -1,9 +1,9 @@
 *!Created by mwg 5/22/2020
 *!Version 1.1
-//Updated 11/10 to fix the Box paths due to an update in September 2021.
-//Updated 9/23/2022 to update paths for Marshall's Macbook
-//Updated 10/18/2022 to add Amie to user list.
-//adapted from preamble.ado
+*!Updated 11/10 to fix the Box paths due to an update in September 2021.
+*!Updated 9/23/2022 to update paths for Marshall's Macbook
+*!Updated 10/18/2022 to add Amie to user list.
+//Adapted from preamble.ado
 capture program drop uas_preamble
 program define uas_preamble
 	version 9.2
