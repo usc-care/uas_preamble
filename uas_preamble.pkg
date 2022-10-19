@@ -1,0 +1,16 @@
+d 'uas_preamble': A program to simplify and standardize workflow initialization for the UAS Education team.
+d
+d uas_preamble is a program for initializing the workflow to create UAS analytic files.
+d
+d KW: Data management
+d
+d Requires: Stata version 9.2
+d
+d Distribution-Date: 20221018
+d
+d Author: Marshall Garland
+d	  Research Scientist,
+d	  University of Southern California
+d Author Email : garlandm @t usc [dot] edu
+d
+f uas_preamble.ado

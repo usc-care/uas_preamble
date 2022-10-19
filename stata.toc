@@ -1,0 +1,6 @@
+v 3
+d uas_preamble: A program to simplify and standardize workflow initialization for the UAS Education team
+d
+d Marshall Garland, University of Southern California, Los Angeles, CA.
+
+p uas_preamble
