@@ -75,7 +75,7 @@ program define uas_preamble
 		global main "`root'/Library/CloudStorage/Box-Box/UAS Education/UAS_COVID/"
 		global sf "`root'/Library/CloudStorage/Box-Box/UAS Education/_MASTER_UAS-COVID/"
 	}
-	if "`c(username)'"=="amierapaport" {
+	else if "`c(username)'"=="amierapaport" {
 		global main "`root'/Library/CloudStorage/Box-Box/UAS_COVID/"
 		global sf "`root'/Library/CloudStorage/Box-Box/UAS_COVID"
 	}
@@ -83,6 +83,7 @@ program define uas_preamble
 		global main "`root'/Box/UAS EDUCATION/UAS_COVID/"
 		global sf "`root'/Box/UAS EDUCATION/_MASTER_UAS-COVID/"
 	}
+
 	if "`git'"!="" {
 		if "`username'"!="garlandm" {
 			di as error "The Git option is only available under garlandm's profile."
