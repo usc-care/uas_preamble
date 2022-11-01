@@ -14,14 +14,18 @@ help for {hi:uas_preamble}
 {cmdab:fig:types}[{cmd:(}{it:fileformat}{cmd:)}]
 {cmd:wave(}{it:#}{cmd:)}
 {cmd:resultsfile}[{cmd:(}{it:"output_file_name"}{cmd:)}]
+{cmd:waveout}[{cmd:(}{it:"Path and name of wave-only file"}{cmd:)}]
 {cmdab:ado:s}{cmd:(}{it:ados_to_install,}{cmd:)}
 {cmd:seed(}{it:#}{cmd:)}
+{cmd:sortseed(}{it:#}{cmd:)}
 {cmdab:neww:ave}
 {cmd:using}
 {cmdab:clean:ing}{cmd:(}{it:ados_and_dos_to_run,}{cmd:)}
 ]
 
 {title:Options}
+
+{p 4 8 2}{cmd:wave} Enter the number of the current UAS wave. This option is {bf:required}.
 
 {p 4 8 2}{cmd:logname} Creates a log file matching the name entered.
 
@@ -40,6 +44,8 @@ Excel format is .xlsx. Creation date is automatically added as a suffix to the f
 {p 4 8 2}{cmd:ados} Ado files to install during the session. Unique ados should be separated by commas.
 
 {p 4 8 2}{cmd:seed} Seed number for random number generator. Default is {bf:3456789}.
+
+{p 4 8 2}{cmd:sortseed} Sort seed number for random number generator for sorting. Default is {bf:825920}.
 
 {p 4 8 2}{cmd:newwave} Option creates directories
 and sub-directories for the new wave and corresponding global macros. Type -macro dir- to

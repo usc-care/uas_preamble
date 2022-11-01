@@ -1,26 +1,30 @@
-*!Created by mwg 5/22/2020
 *!Version 1.1
-*!Updated 11/10 to fix the Box paths due to an update in September 2021.
-*!Updated 9/23/2022 to update paths for Marshall's Macbook
+*!Updated 10/31/2022 to change organizational structure and to add an option to save an intermediate dataset for the current wave.
 *!Updated 10/18/2022 to add Amie to user list.
+*!Updated 9/23/2022 to update paths for Marshall's Macbook
+*!Updated 11/10 to fix the Box paths due to an update in September 2021.
+*!Created by mwg 5/22/2020
 //Adapted from preamble.ado
 capture program drop uas_preamble
 program define uas_preamble
 	version 9.2
 	syntax [anything], ///
+		WAVE(string) ///
 		[LOGName(string) ///
 		LOGPath(string) ///
 		GIT ///
 		FIGtypes(string) ///
-		WAVE(string) ///
 		RESULTSFILE(string) ///
 		ADOs(string) ///
 		SEED(integer 3456789) ///
+		SORTSEED(integer 825920) ///
 		NEWWAve ///
 		USING(string asis) ///
 		CLEANing(string asis) ///
 		]
 
+	//Get user's CWD
+	local cwd `"`c(pwd)'"'
 	*Date cleanup
 	global date
 	global date `"`=subinstr("`:di %td (date("`c(current_date)'", "DMY"))'", ":", "_", .)'"'
@@ -57,7 +61,7 @@ program define uas_preamble
 	local root "${root}/`username'/"
 
 	*3. Confirming dependencies installed
-	local dependencies "confirmdir smrtbl"
+	local dependencies "confirmdir smrtbl dirtools egenmore"
 	if "`ados'"!="" {
 		local dependencies "`dependencies' `ados'"
 	}
@@ -68,20 +72,41 @@ program define uas_preamble
 		}
 	}
 
+	quietly confirmdir "${`w'${wave}}"
+	if `r(confirmdir)'!=0 & "`newwave'"=="" {
+		di as error "Path ${`w'} doesn't exist. Check base path or specify -newwave- option to create a new wave subfolder."
+		exit 110
+	}
+	if `r(confirmdir)'!=0 & "`newwave'"!="" {
+		cap mkdir "${`w'}"
+	}
+
 	*4. Creating globals
-	**Add primary project team and edu project teams here
-	//Updated 11/10/2021
+	//Add primary project team and edu project teams here
+	//And, confirm main and sf directories exist!
+	//Updated 10/31/2022
 	if "`c(username)'"=="garlandm" & "`c(machine_type)'"=="Mac (Apple Silicon)" {
-		global main "`root'/Library/CloudStorage/Box-Box/UAS Education/UAS_COVID/"
-		global sf "`root'/Library/CloudStorage/Box-Box/UAS Education/_MASTER_UAS-COVID/"
+		global main "`root'/Library/CloudStorage/Box-Box/UAS Education/surveys/"
+		global edu "`root'/Library/CloudStorage/Box-Box/UAS Education/"
+		global sf "`root'/Library/CloudStorage/Box-Box/UAS Education/UAS_COVID/"
 	}
 	else if "`c(username)'"=="amierapaport" {
-		global main "`root'/Library/CloudStorage/Box-Box/UAS_COVID/"
-		global sf "`root'/Library/CloudStorage/Box-Box/UAS_COVID"
+		global sf "`root'/Library/CloudStorage/Box-Box/UAS Education/UAS_COVID/"
+		global main "`root'/Library/CloudStorage/Box-Box/UAS Education/surveys/"
+		global edu "`root'/Library/CloudStorage/Box-Box/UAS Education/"
 	}
 	else {
-		global main "`root'/Box/UAS EDUCATION/UAS_COVID/"
-		global sf "`root'/Box/UAS EDUCATION/_MASTER_UAS-COVID/"
+		global main "`root'/Box/UAS EDUCATION/surveys/"
+		global sf "`root'/Box/UAS Education/UAS_COVID/"
+		global edu "`root'/Box/UAS Education/"
+	}
+
+	foreach x in main sf {
+		quietly confirmdir "${`x'}"
+		if `r(confirmdir)'!=0 {
+			di as error "Path ${`x''} doesn't exist on user `c(username)'s computer."
+			exit 110
+		}
 	}
 
 	if "`git'"!="" {
@@ -92,39 +117,43 @@ program define uas_preamble
 			global git "${root}/Sites/UAS/Cleaning Code/_Education/"
 	}
 
-	if !missing("`wave'") {
-		cap confirm number `wave'
-		if _rc!=0 {
-			di as error "Invalid wave value (`wave'). Enter wave number as an integer (e.g., 230, 235, 240)."
-			exit 110
-		}
-		global wave `wave'
-		local wave "/uas_${wave}/"
+	//Confirming wave is a valid number
+	cap confirm number `wave'
+	if _rc!=0 {
+		di as error "Invalid wave value (`wave'). Enter wave number as an integer (e.g., 230, 235, 240)."
+		exit 110
 	}
 
-	global logs "${main}/Logs/`wave'"
-	global rawdata "$main/Data/Raw/"
-	global cleandata "$main/Data/Clean/"
-	global csvdata "$main/Data/CSV/"
-	global coviddata "$main/Data/COVID/"
-	global code "$main/Code/_ChildFiles/"
-	if !missing("`wave'") {
-		global code${wave} "$main/Code/_ChildFiles//`wave'/"
-		global documentation${wave} "$main/Documentation//`wave'/"
-		cap mkdir "${documentation${wave}}"
-	}
+	global wave `wave'
+	local wave "/uas_${wave}/"
+	global wavepath${wave} "${main}/`wave'/"
 
-	global output "$main/Output//`wave'"
+	//Globals in the main UAS directory. The content of these folders' is used across multiple UAS waves, so they are not stored in the wave-specific directory.
+	global rawdata "$sf/Data/Raw/"
+	global cleandata "$sf/Data/Clean/"
+	global csvdata "$sf/Data/CSV/"
+	global coviddata "$sf/Data/COVID/"
+	global code "$sf/Code/_ChildFiles/"
 	global extras "$main/Code/Extras/"
-	global results "$main/Results//`wave'"
-	global ccddata "$main/CCD_data/"
 	global masterdata "${cleandata}Masterdataset/"
 	global intermediate "${cleandata}Intermediate Datasets/"
-	global sandbox "${main}/Code/Sandbox/"
-	global weighting "${main}/Code/Weighting/"
-	global qc "${main}/Code/QC/"
 	global other "${main}/Code/Other/"
 	global securedata "${main}/Data/Secure Data/"
+	global ccddata "$main/CCD_data/"
+
+	//Create wave folders and confirm the path exists on the user's machine.
+	local fcreate raw clean code documentation logs output results tracker qc toplines instrument
+	foreach w in `fcreate' {
+		global `w'${wave} "$main/`wave'/`w'"
+		quietly confirmdir "${`w'${wave}}"
+		if `r(confirmdir)'!=0 & "`newwave'"=="" {
+			di as error "Path ${`w'${wave}} doesn't exist. Check base path or specify -newwave- option to create a new wave subfolder."
+			exit 110
+		}
+		if `r(confirmdir)'!=0 & "`newwave'"!="" {
+			cap mkdir "${`w'${wave}}"
+		}
+	}
 
 	*Adding primary project team globlals for mgarland only, since i have access to the main dbox
 	if "`username'"=="garlandm" {
@@ -144,21 +173,6 @@ program define uas_preamble
 	global uscblue "6 49 155"
 	global uscdbrown "102 71 47"
 	global usclbrown "180 148 114"
-
-	*Confirming global paths are valid.
-	*If a non-existent wave is added, check to see whether -newwave- option exists and, if so, create new subfolder.
-	*Otherwise, exit.
-	local paths main sf logs rawdata cleandata coviddata code documentation output extras results sandbox other weighting
-	foreach x of local paths {
-		quietly confirmdir "${`x'}"
-		if `r(confirmdir)'!=0 & "`newwave'"=="" {
-			di as error "Path ${`x'} doesn't exist. Check base path or specify -newwave- option to create a new wave subfolder."
-			exit 110
-		}
-		if `r(confirmdir)'!=0 & "`newwave'"!="" {
-			cap mkdir "${`x'}"
-		}
-	}
 
 	*5. Now, resultsfilename
 	if !missing("`resultsfile") {
@@ -209,16 +223,19 @@ program define uas_preamble
 	*9. Seed
 	set seed `seed'
 
+	*9a. Sortseed
+	set sortseed `sortseed'
+
 	*10. Using.
 	local use
 	local use "`using'"
 	if "`use'"!="" {
-		cap confirm file "${masterdata}/`use'.dta"
+		cap confirm file "${raw${wave}}/`use'.dta"
 		if _rc!=0 {
-			di as error "File `use' not found in ${masterdata}"
+			di as error "File `use' not found in ${raw${wave}}"
 		}
 		else {
-			use "${masterdata}`use'", clear
+			use "${raw${wave}}/`use'", clear
 		}
 	}
 
@@ -231,7 +248,7 @@ program define uas_preamble
 			assert !missing(`inmaster')
 			*In master, running
 			if `inmaster'==0 {
-				di as result "`1' found: executing."
+				di as result "`1' found in ${code}: executing."
 				quietly do "${code}`1'"
 			}
 			*Not in master, but -wave- option specified
@@ -243,11 +260,19 @@ program define uas_preamble
 				}
 				*not found in master, but found in the subfolder.
 				else {
-					di as result "`1' found: executing."
+					di as result "`1' found in ${code${wave}}: executing."
 					quietly do "${code${wave}}`1'"
 				}
 			}
 			mac shift 2
 		}
 	}
+
+	//Printout directory structure!
+	qui cd "${wavepath${wave}}"
+	di as result "Welcome `c(username)'!: Below are the sub-folders in the " in red "UAS ${wave}" as result " directory"
+	ldir
+	di as text "Click the [uas_${wave}] link below to change your working directory to the UAS ${wave} folder:"
+	di as result `"{stata `"cd `"${wavepath${wave}}"'"':[uas_${wave}]}
+	qui cd "`cwd'"
 end
