@@ -61,7 +61,8 @@ program define uas_preamble
 	local root "${root}/`username'/"
 
 	*3. Confirming dependencies installed
-	local dependencies "confirmdir smrtbl dirtools egenmore"
+	//First, .ados
+	local dependencies "confirmdir smrtbl"
 	if "`ados'"!="" {
 		local dependencies "`dependencies' `ados'"
 	}
@@ -72,13 +73,13 @@ program define uas_preamble
 		}
 	}
 
-	quietly confirmdir "${`w'${wave}}"
-	if `r(confirmdir)'!=0 & "`newwave'"=="" {
-		di as error "Path ${`w'} doesn't exist. Check base path or specify -newwave- option to create a new wave subfolder."
-		exit 110
-	}
-	if `r(confirmdir)'!=0 & "`newwave'"!="" {
-		cap mkdir "${`w'}"
+	//Now, packages
+	local pkg "_gvar.ado ldir"
+	foreach x of local pkg {
+		cap which `x'
+		if _rc!=0 {
+			quietly ssc install `x'
+		}
 	}
 
 	*4. Creating globals
@@ -127,6 +128,11 @@ program define uas_preamble
 	global wave `wave'
 	local wave "/uas_${wave}/"
 	global wavepath${wave} "${main}/`wave'/"
+
+	//Creating new wave project folder if -newwave- specified
+	if !mi("`newwave'") {
+		cap mkdir "${wavepath${wave}}"
+	}
 
 	//Globals in the main UAS directory. The content of these folders' is used across multiple UAS waves, so they are not stored in the wave-specific directory.
 	global rawdata "$sf/Data/Raw/"
@@ -187,8 +193,8 @@ program define uas_preamble
 		log using "`log'", replace text
 	}
 	if "`logname'"!="" & "`logpath'"=="" {
-		local log "${logs}//`logname'_`username'_${date}"
-		di as txt "Log path not specified:{bf: using ${logs}}"
+		local log "${logs${wave}}//`logname'_`username'_${date}"
+		di as txt "Log path not specified:{bf: using ${logs${wave}}"
 		log using "`log'", replace text
 	}
 	if "`logpath'"!="" & "`logname'"=="" {

@@ -30,7 +30,7 @@ help for {hi:uas_preamble}
 {p 4 8 2}{cmd:logname} Creates a log file matching the name entered.
 
 {p 4 8 2}{cmd:logpath} Defines the path to save the log file. Default is
-to save in path defined in the {bf:logs} global macro. If specified, logname
+to save in current survey path path defined in the {bf:logs} global macro. If specified, logname
 must be entered.
 
 {p 4 8 2}{cmd:figtypes} Places the {it:fileformat}s of the figures created
@@ -53,12 +53,12 @@ view directories stored in global macros. If option is entered, {cmd:wave} must 
 with the new wave.
 
 {p 4 8 2}{cmd:using} Enter the name of the source file (e.g., covidpanel_us_stata_jun_10_2020).
-Only opens files in the Masterdataset folder in the /Clean/ subdirectory of Box.
+Only opens files in the /raw/ folder in the current survey wave directory.
 
 {p 4 8 2}{cmd:cleaning} Cleaning scripts to run. Multiple scripts should be separated by commas.
 The program searches through two directories to locate the file specified by the user: the master code folder
 and the sub-folder associated with the wave included in the -wave- option. The user must enter the suffix
-of the do or ado file (e.g., foo.do, foo.ado).
+of the do or ado file (e.g., foo.do, foo.ado). {bf: This option is mostly deprectated, since all of the cleaning scripts are consolidated into the 01_clean.do file!}
 
 {title:Author}
 
