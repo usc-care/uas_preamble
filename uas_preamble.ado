@@ -1,4 +1,5 @@
 *!Version 1.1
+*!Updated 10/12/2023: Updated file paths to reflect switch to OD
 *!Updated 10/31/2022 to change organizational structure and to add an option to save an intermediate dataset for the current wave.
 *!Updated 10/18/2022 to add Amie to user list.
 *!Updated 9/23/2022 to update paths for Marshall's Macbook
@@ -74,7 +75,7 @@ program define uas_preamble
 	}
 
 	//Now, packages
-	local pkg "_gvar.ado ldir"
+	local pkg "_gvar.ado ldir dirtree"
 	foreach x of local pkg {
 		cap which `x'
 		if _rc!=0 {
@@ -85,21 +86,23 @@ program define uas_preamble
 	*4. Creating globals
 	//Add primary project team and edu project teams here
 	//And, confirm main and sf directories exist!
+	//Updated 10/12/2023
+
 	//Updated 10/31/2022
 	if "`c(username)'"=="garlandm" & "`c(machine_type)'"=="Mac (Apple Silicon)" {
-		global main "`root'/Library/CloudStorage/Box-Box/UAS Education/surveys/"
-		global edu "`root'/Library/CloudStorage/Box-Box/UAS Education/"
-		global sf "`root'/Library/CloudStorage/Box-Box/UAS Education/UAS_COVID/"
+		global main "`root'/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofSouthernCalifornia/CESR-Education - Data/UAS/surveys/"
+		global edu "`root'/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofSouthernCalifornia/CESR-Education - Data/UAS/UAS_COVID/"
+		global sf "`root'/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofSouthernCalifornia/"
 	}
 	else if "`c(username)'"=="amierapaport" {
-		global sf "`root'/Library/CloudStorage/Box-Box/UAS Education/UAS_COVID/"
-		global main "`root'/Library/CloudStorage/Box-Box/UAS Education/surveys/"
-		global edu "`root'/Library/CloudStorage/Box-Box/UAS Education/"
+		global main "`root'/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofSouthernCalifornia/CESR-Education - Data/UAS/surveys/"
+		global edu "`root'/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofSouthernCalifornia/CESR-Education - Data/UAS/UAS_COVID/"
+		global sf "`root'/Library/CloudStorage/OneDrive-SharedLibraries-UniversityofSouthernCalifornia/"
 	}
 	else {
-		global main "`root'/Box/UAS EDUCATION/surveys/"
-		global sf "`root'/Box/UAS Education/UAS_COVID/"
-		global edu "`root'/Box/UAS Education/"
+		global main "`root'/`c(username)'//University of Southern California/CESR-Education - Data/UAS/surveys/"
+		global sf "`root'/`c(username)'//University of Southern California/CESR-Education - Data/UAS/UAS_COVID/"
+		global edu "`root'/`c(username)'//University of Southern California/"
 	}
 
 	foreach x in main sf {
@@ -277,7 +280,7 @@ program define uas_preamble
 	//Printout directory structure!
 	qui cd "${wavepath${wave}}"
 	di as result "Welcome `c(username)'!: Below are the sub-folders in the " in red "UAS ${wave}" as result " directory"
-	ldir
+	dirtree, dir(${wavepath${wave}})
 	di as text "Click the [uas_${wave}] link below to change your working directory to the UAS ${wave} folder:"
 	di as result `"{stata `"cd `"${wavepath${wave}}"'"':[uas_${wave}]}
 	qui cd "`cwd'"
