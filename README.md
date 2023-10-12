@@ -3,7 +3,7 @@
 `uas_preamble` is a convenience program for simplifying and standardizing the initial loading, cleaning, and variable derivation for each UAS education survey wave data file.
 
 # Installation
-`net install uas_preamble, from(https://raw.githubusercontent.com/usc-care/uas_preamble/master)`
+For new installations, paste the following code into your command line in a Stata interface: `net install uas_preamble, from(https://raw.githubusercontent.com/usc-care/uas_preamble/master)`. To update an existing installation, add the `replace` option.
 
 # Usage
 Type `help uas_preamble` into a command line to access the help file.
